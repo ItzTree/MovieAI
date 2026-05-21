@@ -1,7 +1,9 @@
 package com.movieai.app.presentation.components
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,18 +27,25 @@ import com.movieai.app.presentation.theme.MovieAiTheme
  * All metadata (title, year, rating, favorite indicator) is rendered by
  * the parent layout so the card stays a clean image surface.
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PosterCard(
     movie: Movie,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onLongClick: (() -> Unit)? = null,
 ) {
+    val gestureModifier = if (onLongClick != null) {
+        Modifier.combinedClickable(onClick = onClick, onLongClick = onLongClick)
+    } else {
+        Modifier.clickable(onClick = onClick)
+    }
     Box(
         modifier = modifier
             .aspectRatio(2f / 3f)
             .clip(RoundedCornerShape(14.dp))
             .background(MovieAiGradients.forMovieId(movie.id))
-            .clickable(onClick = onClick),
+            .then(gestureModifier),
     ) {
         movie.posterUrl?.let { url ->
             AsyncImage(

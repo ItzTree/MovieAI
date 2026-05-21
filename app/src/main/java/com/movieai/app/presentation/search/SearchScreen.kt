@@ -74,11 +74,7 @@ private fun SearchContent(
             .padding(horizontal = 20.dp),
     ) {
         Spacer(Modifier.height(16.dp))
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-            Text("오늘 뭐 보지?", color = MovieAiColors.text, style = MaterialTheme.typography.headlineLarge)
-            Spacer(Modifier.weight(1f))
-            Text("WTM/v1.4", color = MovieAiColors.textDim, style = MaterialTheme.typography.labelSmall)
-        }
+        Text("오늘 뭐 보지?", color = MovieAiColors.text, style = MaterialTheme.typography.headlineLarge)
 
         Spacer(Modifier.height(16.dp))
         SearchField(query = state.query, onQueryChange = onQueryChange)
@@ -182,11 +178,7 @@ private fun PreviewSearchChrome() {
             modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp),
         ) {
             Spacer(Modifier.height(16.dp))
-            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text("오늘 뭐 보지?", color = MovieAiColors.text, style = MaterialTheme.typography.headlineLarge)
-                Spacer(Modifier.weight(1f))
-                Text("WTM/v1.4", color = MovieAiColors.textDim, style = MaterialTheme.typography.labelSmall)
-            }
+            Text("오늘 뭐 보지?", color = MovieAiColors.text, style = MaterialTheme.typography.headlineLarge)
             Spacer(Modifier.height(16.dp))
             SearchField(query = "", onQueryChange = {})
             Spacer(Modifier.height(14.dp))
