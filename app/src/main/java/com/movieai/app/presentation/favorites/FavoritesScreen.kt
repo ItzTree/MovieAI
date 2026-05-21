@@ -14,20 +14,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -35,6 +29,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.movieai.app.domain.model.Movie
 import com.movieai.app.presentation.components.EmptyState
+import com.movieai.app.presentation.components.FavoriteHeart
 import com.movieai.app.presentation.components.PosterCard
 import com.movieai.app.presentation.components.RatingPill
 import com.movieai.app.presentation.theme.MovieAiColors
@@ -62,7 +57,6 @@ private fun FavoritesContent(
     onAiRecClick: () -> Unit,
     onRemove: (Movie) -> Unit,
 ) {
-    var pendingRemoval by remember { mutableStateOf<Movie?>(null) }
     val items = (state as? FavoritesUiState.Success)?.items.orEmpty()
 
     Column(
@@ -106,7 +100,6 @@ private fun FavoritesContent(
                             PosterCard(
                                 movie = movie,
                                 onClick = { onMovieClick(movie.id) },
-                                onLongClick = { pendingRemoval = movie },
                             )
                             Spacer(Modifier.height(6.dp))
                             Text(
@@ -124,6 +117,7 @@ private fun FavoritesContent(
                                 )
                                 Spacer(Modifier.width(8.dp))
                                 RatingPill(rating = movie.rating)
+                                FavoriteHeart(onToggle = { onRemove(movie) })
                             }
                         }
                     }
@@ -132,29 +126,6 @@ private fun FavoritesContent(
         }
     }
 
-    pendingRemoval?.let { movie ->
-        AlertDialog(
-            onDismissRequest = { pendingRemoval = null },
-            containerColor = MovieAiColors.surface,
-            titleContentColor = MovieAiColors.text,
-            textContentColor = MovieAiColors.textDim,
-            title = { Text("삭제할까요?") },
-            text = { Text("‘${movie.title}’ 을(를) 보관함에서 뺍니다.") },
-            confirmButton = {
-                TextButton(onClick = {
-                    onRemove(movie)
-                    pendingRemoval = null
-                }) {
-                    Text("삭제", color = MovieAiColors.danger)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { pendingRemoval = null }) {
-                    Text("취소", color = MovieAiColors.text)
-                }
-            },
-        )
-    }
 }
 
 @Preview(backgroundColor = 0xFF0D0F1A, showBackground = true, widthDp = 412, heightDp = 800)

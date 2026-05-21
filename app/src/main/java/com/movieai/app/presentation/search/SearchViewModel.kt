@@ -7,6 +7,7 @@ import androidx.paging.cachedIn
 import com.movieai.app.domain.model.Movie
 import com.movieai.app.domain.usecase.ObserveFavoritesUseCase
 import com.movieai.app.domain.usecase.SearchMoviesUseCase
+import com.movieai.app.domain.usecase.ToggleFavoriteUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -21,6 +22,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
@@ -28,6 +30,7 @@ import javax.inject.Inject
 class SearchViewModel @Inject constructor(
     searchMovies: SearchMoviesUseCase,
     observeFavorites: ObserveFavoritesUseCase,
+    private val toggleFavorite: ToggleFavoriteUseCase,
 ) : ViewModel() {
 
     private val queryFlow = MutableStateFlow("")
@@ -53,4 +56,7 @@ class SearchViewModel @Inject constructor(
 
     fun onQueryChange(q: String) { queryFlow.value = q }
     fun onGenreSelect(g: String) { genreFlow.value = g }
+    fun onToggleFavorite(movie: Movie) {
+        viewModelScope.launch { toggleFavorite(movie) }
+    }
 }
