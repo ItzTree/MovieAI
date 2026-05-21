@@ -3,8 +3,11 @@
 
 sdk.dir=/path/to/your/Android/sdk
 
+# NOTE: Properties files — no quotes around values.
+# The build script wraps these in quotes when injecting into BuildConfig.
+
 # TMDB v4 Read Access Token (https://www.themoviedb.org/settings/api)
-TMDB_API_KEY="your-tmdb-v4-read-access-token"
+TMDB_API_KEY=your-tmdb-v4-read-access-token
 
 # Google AI Studio API key (https://aistudio.google.com/app/apikey)
-GEMINI_API_KEY="your-gemini-api-key"
+GEMINI_API_KEY=your-gemini-api-key
