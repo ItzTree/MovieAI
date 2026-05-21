@@ -58,7 +58,13 @@ fun MovieAiNavGraph() {
             composable(Screen.Favorites.route) {
                 FavoritesScreen(
                     onMovieClick = { id -> navController.navigate(Screen.Detail.build(id)) },
-                    onAiRecClick = { navController.navigate(Screen.Recommend.route) },
+                    onAiRecClick = {
+                        navController.navigate(Screen.Recommend.route) {
+                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
                 )
             }
             composable(Screen.Recommend.route) {

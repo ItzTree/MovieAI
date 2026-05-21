@@ -101,7 +101,7 @@ private fun FavoritesContent(
                                 movie = movie,
                                 onClick = { onMovieClick(movie.id) },
                             )
-                            Spacer(Modifier.height(6.dp))
+                            Spacer(Modifier.height(8.dp))
                             Text(
                                 movie.title,
                                 color = MovieAiColors.text,

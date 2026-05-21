@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
@@ -126,7 +127,7 @@ private fun SearchContent(
                                 movie = movie,
                                 onClick = { onMovieClick(movie.id) },
                             )
-                            Spacer(Modifier.height(6.dp))
+                            Spacer(Modifier.height(8.dp))
                             Text(
                                 movie.title,
                                 color = MovieAiColors.text,
@@ -134,7 +135,10 @@ private fun SearchContent(
                                 maxLines = 1,
                             )
                             Spacer(Modifier.height(2.dp))
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.heightIn(min = 30.dp),
+                            ) {
                                 Text(
                                     movie.year?.toString() ?: "—",
                                     color = MovieAiColors.textDim,
