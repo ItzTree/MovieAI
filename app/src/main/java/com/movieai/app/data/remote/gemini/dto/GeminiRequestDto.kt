@@ -17,5 +17,16 @@ data class GeminiRequestDto(
     @Serializable
     data class GenerationConfig(
         @SerialName("responseMimeType") val responseMimeType: String = "application/json",
+        @SerialName("thinkingConfig") val thinkingConfig: ThinkingConfig = ThinkingConfig(),
+    )
+
+    /**
+     * Disables 2.5-flash's default chain-of-thought to cut response latency
+     * from ~10-30s down to ~3-5s. Budget 0 = no thinking tokens. Acceptable
+     * trade-off for our task (movie taste analysis from 3+ favorites).
+     */
+    @Serializable
+    data class ThinkingConfig(
+        @SerialName("thinkingBudget") val thinkingBudget: Int = 0,
     )
 }

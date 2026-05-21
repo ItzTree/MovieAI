@@ -1,5 +1,6 @@
 package com.movieai.app.data.repository
 
+import android.util.Log
 import com.movieai.app.BuildConfig
 import com.movieai.app.data.local.RecommendationDao
 import com.movieai.app.data.mapper.toDomain
@@ -22,6 +23,8 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import javax.inject.Inject
 import javax.inject.Singleton
+
+private const val TAG = "MovieAi/Recommend"
 
 @Singleton
 class RecommendationRepositoryImpl @Inject constructor(
@@ -46,7 +49,14 @@ class RecommendationRepositoryImpl @Inject constructor(
                 val resp = gemini.generate(BuildConfig.GEMINI_API_KEY, body)
                 val raw = resp.candidates.firstOrNull()?.content?.parts?.firstOrNull()?.text
                     ?: error("Empty Gemini response")
-                val parsed = json.decodeFromString<RecommendationsWrapper>(raw)
+                Log.d(TAG, "Gemini raw response (${raw.length} chars):\n$raw")
+                val cleaned = stripCodeFences(raw)
+                val parsed = try {
+                    json.decodeFromString<RecommendationsWrapper>(cleaned)
+                } catch (e: Throwable) {
+                    Log.e(TAG, "JSON parse failed. Cleaned was:\n$cleaned", e)
+                    throw e
+                }
                 val enriched = coroutineScope {
                     parsed.recommendations.mapIndexed { idx, item ->
                         async { enrich(idx + 1, item) }
@@ -81,6 +91,23 @@ class RecommendationRepositoryImpl @Inject constructor(
             다음 JSON 형식으로만 응답하세요:
             {"recommendations":[{"title":"","year":2024,"genres":["",""],"reason":""}]}
         """.trimIndent()
+    }
+
+    /**
+     * Gemini occasionally wraps JSON in ```json ... ``` fences even when
+     * `responseMimeType: application/json` is set — known 2.5-flash quirk
+     * for Korean + complex JSON output. Strip leading/trailing fences so
+     * parsing stays robust regardless.
+     */
+    private fun stripCodeFences(raw: String): String {
+        val trimmed = raw.trim()
+        if (!trimmed.startsWith("```")) return trimmed
+        return trimmed
+            .removePrefix("```json")
+            .removePrefix("```JSON")
+            .removePrefix("```")
+            .removeSuffix("```")
+            .trim()
     }
 
     private fun fallbackMovie(item: RecommendationsWrapper.RecItem): Movie = Movie(
