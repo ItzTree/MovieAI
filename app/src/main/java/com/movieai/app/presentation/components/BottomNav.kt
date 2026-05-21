@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -25,7 +26,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.movieai.app.presentation.theme.MovieAiColors
 import com.movieai.app.presentation.theme.MovieAiTheme
 
@@ -39,10 +39,10 @@ val MovieAiBottomNavItems = listOf(
 
 @Composable
 fun BottomNav(currentRoute: String, onSelect: (String) -> Unit) {
-    Column(modifier = Modifier.fillMaxWidth()) {
+    Column(modifier = Modifier.fillMaxWidth().background(MovieAiColors.bg).navigationBarsPadding()) {
         HorizontalDivider(thickness = 1.dp, color = MovieAiColors.border)
         Row(
-            modifier = Modifier.fillMaxWidth().background(MovieAiColors.bg).height(60.dp),
+            modifier = Modifier.fillMaxWidth().height(68.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
         ) {
             MovieAiBottomNavItems.forEach { item ->
@@ -53,9 +53,9 @@ fun BottomNav(currentRoute: String, onSelect: (String) -> Unit) {
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Icon(item.icon, null, tint = tint, modifier = Modifier.size(16.dp))
-                    Spacer(Modifier.height(3.dp))
-                    Text(item.label, color = tint, style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp))
+                    Icon(item.icon, null, tint = tint, modifier = Modifier.size(26.dp))
+                    Spacer(Modifier.height(5.dp))
+                    Text(item.label, color = tint, style = MaterialTheme.typography.labelMedium)
                 }
             }
         }

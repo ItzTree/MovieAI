@@ -1,5 +1,7 @@
 package com.movieai.app.presentation.navigation
 
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -43,6 +45,10 @@ fun MovieAiNavGraph() {
             navController = navController,
             startDestination = Screen.Search.route,
             modifier = Modifier.padding(padding),
+            enterTransition = { EnterTransition.None },
+            exitTransition = { ExitTransition.None },
+            popEnterTransition = { EnterTransition.None },
+            popExitTransition = { ExitTransition.None },
         ) {
             composable(Screen.Search.route) {
                 SearchScreen(onMovieClick = { id ->
