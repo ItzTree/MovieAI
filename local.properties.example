@@ -1,0 +1,10 @@
+# Copy this file to local.properties and fill in real keys.
+# local.properties is gitignored — never commit it.
+
+sdk.dir=/path/to/your/Android/sdk
+
+# TMDB v4 Read Access Token (https://www.themoviedb.org/settings/api)
+TMDB_API_KEY="your-tmdb-v4-read-access-token"
+
+# Google AI Studio API key (https://aistudio.google.com/app/apikey)
+GEMINI_API_KEY="your-gemini-api-key"
