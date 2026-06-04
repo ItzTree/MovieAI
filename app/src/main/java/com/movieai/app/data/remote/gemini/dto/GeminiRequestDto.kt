@@ -18,6 +18,10 @@ data class GeminiRequestDto(
     data class GenerationConfig(
         @SerialName("responseMimeType") val responseMimeType: String = "application/json",
         @SerialName("thinkingConfig") val thinkingConfig: ThinkingConfig = ThinkingConfig(),
+        // Ceiling on output tokens — guards against runaway-long responses
+        // (tail latency). Generous so the 5-item JSON never truncates, which
+        // would otherwise break parsing.
+        @SerialName("maxOutputTokens") val maxOutputTokens: Int = 1024,
     )
 
     /**

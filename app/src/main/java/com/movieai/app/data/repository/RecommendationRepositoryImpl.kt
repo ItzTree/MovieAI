@@ -58,22 +58,29 @@ class RecommendationRepositoryImpl @Inject constructor(
                     throw e
                 }
                 val enriched = coroutineScope {
-                    parsed.recommendations.mapIndexed { idx, item ->
-                        async { enrich(idx + 1, item) }
+                    parsed.recommendations.map { item ->
+                        async { enrich(item) }
                     }.awaitAll()
-                }
+                }.filterNotNull().mapIndexed { idx, rec -> rec.copy(rank = idx + 1) }
+                if (enriched.isEmpty()) error("추천할 영화를 찾지 못했어요. 다시 시도해주세요.")
                 recommendationDao.replaceAll(enriched.map { it.toEntity() })
                 enriched
             }
         }
 
-    private suspend fun enrich(rank: Int, item: RecommendationsWrapper.RecItem): Recommendation {
+    /**
+     * Looks the recommended title up on TMDB. Returns null when there's no
+     * match — those recommendations are dropped so the list only contains
+     * real, navigable movies. A synthetic id would 404 on the detail screen
+     * and have no poster. Rank is assigned by the caller after misses are
+     * filtered out, so the value here is a placeholder.
+     */
+    private suspend fun enrich(item: RecommendationsWrapper.RecItem): Recommendation? {
         val tmdbHit = runCatching {
             tmdb.searchMovies(query = item.title).results.firstOrNull()
-        }.getOrNull()
-        val movie = tmdbHit?.movieDtoToDomain()?.copy(genres = item.genres)
-            ?: fallbackMovie(item)
-        return Recommendation(rank = rank, movie = movie, reason = item.reason)
+        }.getOrNull() ?: return null
+        val movie = tmdbHit.movieDtoToDomain().copy(genres = item.genres)
+        return Recommendation(rank = 0, movie = movie, reason = item.reason)
     }
 
     private fun buildPrompt(favs: List<Movie>): String {
@@ -86,7 +93,7 @@ class RecommendationRepositoryImpl @Inject constructor(
 
             이 사람의 취향을 분석해 비슷한 결의 영화 5편을 추천해주세요.
             추천 작품은 이미 좋아한 영화와 중복되지 않아야 합니다.
-            각 추천에는 사용자에게 호소력 있는 2-3문장 추천 이유를 포함하세요.
+            각 추천에는 사용자에게 호소력 있는 한 문장(60자 이내) 추천 이유를 포함하세요.
 
             다음 JSON 형식으로만 응답하세요:
             {"recommendations":[{"title":"","year":2024,"genres":["",""],"reason":""}]}
@@ -110,14 +117,4 @@ class RecommendationRepositoryImpl @Inject constructor(
             .trim()
     }
 
-    private fun fallbackMovie(item: RecommendationsWrapper.RecItem): Movie = Movie(
-        id            = item.title.hashCode().toLong(),
-        title         = item.title,
-        originalTitle = item.title,
-        year          = item.year,
-        posterUrl     = null,
-        backdropUrl   = null,
-        rating        = 0.0,
-        genres        = item.genres,
-    )
 }

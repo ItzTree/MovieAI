@@ -30,6 +30,11 @@ object NetworkModule {
         ignoreUnknownKeys = true
         isLenient = true
         coerceInputValues = true
+        // Serialize default values too. The Gemini request's generationConfig
+        // (thinkingBudget=0, maxOutputTokens, responseMimeType) are all defaults;
+        // without this they'd be dropped from the body, silently re-enabling
+        // 2.5-flash's slow thinking (~15s vs ~3-5s).
+        encodeDefaults = true
     }
 
     @Provides @Singleton

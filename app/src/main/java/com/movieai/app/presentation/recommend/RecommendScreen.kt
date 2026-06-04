@@ -74,7 +74,7 @@ private fun RecommendContent(
                 Text("AI 추천", color = MovieAiColors.text, style = MaterialTheme.typography.headlineLarge)
                 Spacer(Modifier.height(2.dp))
                 Text(
-                    "당신의 취향에 맞는 5편",
+                    "당신의 취향에 맞는 영화를 추천해드려요",
                     color = MovieAiColors.textDim,
                     style = MaterialTheme.typography.bodyMedium,
                 )
