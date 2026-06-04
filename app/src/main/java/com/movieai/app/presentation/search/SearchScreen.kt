@@ -88,11 +88,7 @@ private fun SearchContent(
         }
 
         Spacer(Modifier.height(20.dp))
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-            Text("이번 주 트렌딩", color = MovieAiColors.text, style = MaterialTheme.typography.headlineMedium)
-            Spacer(Modifier.weight(1f))
-            Text("전체 보기", color = MovieAiColors.textDim, style = MaterialTheme.typography.labelSmall)
-        }
+        Text("이번 주 트렌딩", color = MovieAiColors.text, style = MaterialTheme.typography.headlineMedium)
         Spacer(Modifier.height(12.dp))
 
         val refresh = lazyItems.loadState.refresh

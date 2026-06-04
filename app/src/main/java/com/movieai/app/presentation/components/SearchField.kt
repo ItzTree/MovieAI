@@ -1,5 +1,6 @@
 package com.movieai.app.presentation.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -53,7 +55,7 @@ fun SearchField(
                 singleLine = true,
                 textStyle = MaterialTheme.typography.bodyLarge.copy(color = MovieAiColors.text),
                 cursorBrush = SolidColor(MovieAiColors.primary),
-                modifier = Modifier.weight(1f).padding(end = 14.dp),
+                modifier = Modifier.weight(1f),
                 decorationBox = { inner ->
                     if (query.isEmpty()) {
                         Text(placeholder, color = MovieAiColors.textDim, style = MaterialTheme.typography.bodyLarge)
@@ -61,6 +63,18 @@ fun SearchField(
                     inner()
                 },
             )
+            if (query.isNotEmpty()) {
+                Icon(
+                    Icons.Default.Close,
+                    contentDescription = "검색어 지우기",
+                    tint = MovieAiColors.textDim,
+                    modifier = Modifier
+                        .clickable { onQueryChange("") }
+                        .padding(4.dp)
+                        .size(18.dp),
+                )
+            }
+            Spacer(Modifier.width(14.dp))
         }
     }
 }
