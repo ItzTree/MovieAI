@@ -12,12 +12,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,7 +32,6 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.movieai.app.domain.model.Movie
 import com.movieai.app.presentation.components.ErrorView
 import com.movieai.app.presentation.components.FavoriteHeart
-import com.movieai.app.presentation.components.GenreChip
 import com.movieai.app.presentation.components.PosterCardSkeleton
 import com.movieai.app.presentation.components.PosterCard
 import com.movieai.app.presentation.components.RatingPill
@@ -54,7 +51,6 @@ fun SearchScreen(
         state = state,
         lazyItems = lazyItems,
         onQueryChange = viewModel::onQueryChange,
-        onGenreSelect = viewModel::onGenreSelect,
         onMovieClick = onMovieClick,
         onToggleFavorite = viewModel::onToggleFavorite,
     )
@@ -65,7 +61,6 @@ private fun SearchContent(
     state: SearchUiState,
     lazyItems: androidx.paging.compose.LazyPagingItems<Movie>,
     onQueryChange: (String) -> Unit,
-    onGenreSelect: (String) -> Unit,
     onMovieClick: (Long) -> Unit,
     onToggleFavorite: (Movie) -> Unit,
 ) {
@@ -79,13 +74,6 @@ private fun SearchContent(
 
         Spacer(Modifier.height(16.dp))
         SearchField(query = state.query, onQueryChange = onQueryChange)
-
-        Spacer(Modifier.height(14.dp))
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            items(MovieAiGenres) { g ->
-                GenreChip(label = g, selected = state.selectedGenre == g) { onGenreSelect(g) }
-            }
-        }
 
         Spacer(Modifier.height(20.dp))
         Text("이번 주 트렌딩", color = MovieAiColors.text, style = MaterialTheme.typography.headlineMedium)
@@ -175,10 +163,6 @@ private fun PreviewSearchChrome() {
             Text("오늘 뭐 보지?", color = MovieAiColors.text, style = MaterialTheme.typography.headlineLarge)
             Spacer(Modifier.height(16.dp))
             SearchField(query = "", onQueryChange = {})
-            Spacer(Modifier.height(14.dp))
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                items(MovieAiGenres) { g -> GenreChip(g, g == "전체") {} }
-            }
         }
     }
 }

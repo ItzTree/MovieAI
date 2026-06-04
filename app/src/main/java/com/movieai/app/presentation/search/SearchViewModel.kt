@@ -34,14 +34,12 @@ class SearchViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val queryFlow = MutableStateFlow("")
-    private val genreFlow = MutableStateFlow("전체")
 
     val state: StateFlow<SearchUiState> = combine(
         queryFlow,
-        genreFlow,
         observeFavorites().map { list -> list.map { it.id }.toSet() }.onStart { emit(emptySet()) },
-    ) { q, g, favIds ->
-        SearchUiState(query = q, selectedGenre = g, favoriteIds = favIds)
+    ) { q, favIds ->
+        SearchUiState(query = q, favoriteIds = favIds)
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
@@ -55,7 +53,6 @@ class SearchViewModel @Inject constructor(
         .cachedIn(viewModelScope)
 
     fun onQueryChange(q: String) { queryFlow.value = q }
-    fun onGenreSelect(g: String) { genreFlow.value = g }
     fun onToggleFavorite(movie: Movie) {
         viewModelScope.launch { toggleFavorite(movie) }
     }
