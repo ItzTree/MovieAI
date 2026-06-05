@@ -13,6 +13,7 @@ import com.movieai.app.domain.model.Movie
 import com.movieai.app.domain.model.Recommendation
 import com.movieai.app.domain.repository.RecommendationRepository
 import com.movieai.app.data.mapper.toDomain as movieDtoToDomain
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -57,30 +58,60 @@ class RecommendationRepositoryImpl @Inject constructor(
                     Log.e(TAG, "JSON parse failed. Cleaned was:\n$cleaned", e)
                     throw e
                 }
-                val enriched = coroutineScope {
+                val outcomes = coroutineScope {
                     parsed.recommendations.map { item ->
                         async { enrich(item) }
                     }.awaitAll()
-                }.filterNotNull().mapIndexed { idx, rec -> rec.copy(rank = idx + 1) }
-                if (enriched.isEmpty()) error("추천할 영화를 찾지 못했어요. 다시 시도해주세요.")
+                }
+                val enriched = outcomes
+                    .filterIsInstance<Enriched.Hit>()
+                    .map { it.recommendation }
+                    .distinctBy { it.movie.id } // collapse duplicate TMDB matches
+                    .mapIndexed { idx, rec -> rec.copy(rank = idx + 1) }
+                if (enriched.isEmpty()) {
+                    // Distinguish a real TMDB outage from a genuine zero-match so
+                    // the user isn't told "no movies found" when the network failed.
+                    if (outcomes.any { it is Enriched.Failed }) {
+                        error("영화 정보를 불러오지 못했어요. 잠시 후 다시 시도해주세요.")
+                    } else {
+                        error("추천할 영화를 찾지 못했어요. 다시 시도해주세요.")
+                    }
+                }
                 recommendationDao.replaceAll(enriched.map { it.toEntity() })
                 enriched
             }
         }
 
     /**
-     * Looks the recommended title up on TMDB. Returns null when there's no
-     * match — those recommendations are dropped so the list only contains
-     * real, navigable movies. A synthetic id would 404 on the detail screen
-     * and have no poster. Rank is assigned by the caller after misses are
-     * filtered out, so the value here is a placeholder.
+     * Looks the recommended title up on TMDB, distinguishing three outcomes:
+     * - [Enriched.Hit] — a real, navigable movie was found.
+     * - [Enriched.Miss] — the API responded but had no match; the recommendation
+     *   is dropped (a synthetic id would 404 on the detail screen and show no
+     *   poster).
+     * - [Enriched.Failed] — the lookup itself errored (timeout, 5xx, …). Kept
+     *   distinct from a miss so the caller can report a network error instead of
+     *   a misleading "not found".
+     *
+     * Rank here is a placeholder, reassigned by the caller after dedup/filtering.
      */
-    private suspend fun enrich(item: RecommendationsWrapper.RecItem): Recommendation? {
-        val tmdbHit = runCatching {
-            tmdb.searchMovies(query = item.title).results.firstOrNull()
-        }.getOrNull() ?: return null
-        val movie = tmdbHit.movieDtoToDomain().copy(genres = item.genres)
-        return Recommendation(rank = 0, movie = movie, reason = item.reason)
+    private suspend fun enrich(item: RecommendationsWrapper.RecItem): Enriched {
+        val results = try {
+            tmdb.searchMovies(query = item.title).results
+        } catch (e: CancellationException) {
+            throw e // never swallow cancellation — preserve structured concurrency
+        } catch (e: Throwable) {
+            Log.w(TAG, "TMDB enrich failed for '${item.title}'", e)
+            return Enriched.Failed
+        }
+        val hit = results.firstOrNull() ?: return Enriched.Miss
+        val movie = hit.movieDtoToDomain().copy(genres = item.genres)
+        return Enriched.Hit(Recommendation(rank = 0, movie = movie, reason = item.reason))
+    }
+
+    private sealed interface Enriched {
+        data class Hit(val recommendation: Recommendation) : Enriched
+        data object Miss : Enriched
+        data object Failed : Enriched
     }
 
     private fun buildPrompt(favs: List<Movie>): String {

@@ -1,5 +1,6 @@
 package com.movieai.app.presentation.search
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +17,8 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,6 +33,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.movieai.app.domain.model.Movie
+import com.movieai.app.presentation.components.EmptyState
 import com.movieai.app.presentation.components.ErrorView
 import com.movieai.app.presentation.components.FavoriteHeart
 import com.movieai.app.presentation.components.PosterCardSkeleton
@@ -97,6 +101,13 @@ private fun SearchContent(
                     items(count = 6) { PosterCardSkeleton() }
                 }
             }
+            refresh is LoadState.NotLoading && lazyItems.itemCount == 0 -> {
+                EmptyState(
+                    icon = Icons.Default.SearchOff,
+                    title = if (state.query.isBlank()) "표시할 영화가 없어요" else "검색 결과가 없어요",
+                    subtitle = if (state.query.isBlank()) null else "다른 검색어로 시도해보세요",
+                )
+            }
             else -> {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
@@ -121,7 +132,7 @@ private fun SearchContent(
                             Spacer(Modifier.height(2.dp))
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.heightIn(min = 30.dp),
+                                modifier = Modifier.fillMaxWidth().heightIn(min = 30.dp),
                             ) {
                                 Text(
                                     movie.year?.toString() ?: "—",
@@ -130,9 +141,11 @@ private fun SearchContent(
                                 )
                                 Spacer(Modifier.width(8.dp))
                                 RatingPill(rating = movie.rating)
-                                if (movie.id in state.favoriteIds) {
-                                    FavoriteHeart(onToggle = { onToggleFavorite(movie) })
-                                }
+                                Spacer(Modifier.weight(1f))
+                                FavoriteHeart(
+                                    isFavorite = movie.id in state.favoriteIds,
+                                    onToggle = { onToggleFavorite(movie) },
+                                )
                             }
                         }
                     }
@@ -143,6 +156,19 @@ private fun SearchContent(
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Text("불러오는 중…", color = MovieAiColors.textDim, style = MaterialTheme.typography.labelMedium)
+                            }
+                        }
+                    }
+                    if (lazyItems.loadState.append is LoadState.Error) {
+                        item(span = { GridItemSpan(2) }) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(60.dp)
+                                    .clickable { lazyItems.retry() },
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text("더 불러오지 못했어요 · 다시 시도", color = MovieAiColors.primary, style = MaterialTheme.typography.labelMedium)
                             }
                         }
                     }

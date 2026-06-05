@@ -117,7 +117,7 @@ private fun FavoritesContent(
                                 )
                                 Spacer(Modifier.width(8.dp))
                                 RatingPill(rating = movie.rating)
-                                FavoriteHeart(onToggle = { onRemove(movie) })
+                                FavoriteHeart(isFavorite = true, onToggle = { onRemove(movie) })
                             }
                         }
                     }

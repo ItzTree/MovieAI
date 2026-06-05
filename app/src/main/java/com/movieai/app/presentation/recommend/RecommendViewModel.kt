@@ -60,6 +60,10 @@ class RecommendViewModel @Inject constructor(
     }
 
     private suspend fun doRefresh(favs: List<Movie>) {
+        // Guard against the init auto-fire and a manual tap overlapping — a
+        // second call would fire a redundant (paid, ~3-5s) Gemini request and
+        // make isRefreshing/error last-writer-wins.
+        if (isRefreshing.value) return
         isRefreshing.value = true
         error.value = null
         val result = refreshRecs(favs)

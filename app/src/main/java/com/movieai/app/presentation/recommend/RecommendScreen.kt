@@ -97,7 +97,16 @@ private fun RecommendContent(
             ) {
                 ErrorView(message = state.error, onRetry = onRefreshClick)
             }
-            state.hasCache -> RecList(state.recommendations, onMovieClick)
+            state.hasCache -> Column {
+                // A refresh can fail while a cached list is on screen — show the
+                // error non-destructively above the old results instead of
+                // swallowing it. User retries via the "다시" chip.
+                if (state.error != null) {
+                    RefreshErrorBanner(state.error)
+                    Spacer(Modifier.height(12.dp))
+                }
+                RecList(state.recommendations, onMovieClick)
+            }
             else -> LoadingState() // unlocked but waiting for first emission
         }
     }
@@ -213,6 +222,22 @@ private fun RecCard(rec: Recommendation, onClick: () -> Unit) {
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun RefreshErrorBanner(message: String) {
+    Surface(
+        shape = RoundedCornerShape(10.dp),
+        color = MovieAiColors.danger.copy(alpha = 0.15f),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Text(
+            message,
+            color = MovieAiColors.danger,
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+        )
     }
 }
 

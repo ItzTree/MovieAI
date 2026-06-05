@@ -4,8 +4,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.movieai.app.domain.model.MovieDetail
-import com.movieai.app.domain.repository.MovieRepository
 import com.movieai.app.domain.usecase.GetMovieDetailUseCase
+import com.movieai.app.domain.usecase.ObserveIsFavoriteUseCase
 import com.movieai.app.domain.usecase.ToggleFavoriteUseCase
 import com.movieai.app.presentation.navigation.Screen
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,7 +22,7 @@ class DetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getMovieDetail: GetMovieDetailUseCase,
     private val toggleFavorite: ToggleFavoriteUseCase,
-    repository: MovieRepository,
+    observeIsFavorite: ObserveIsFavoriteUseCase,
 ) : ViewModel() {
 
     private val movieId: Long =
@@ -32,7 +32,7 @@ class DetailViewModel @Inject constructor(
 
     val state: StateFlow<DetailUiState> = combine(
         detailResult,
-        repository.isFavorite(movieId),
+        observeIsFavorite(movieId),
     ) { result, isFav ->
         when {
             result == null -> DetailUiState.Loading
